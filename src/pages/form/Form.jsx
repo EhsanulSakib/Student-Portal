@@ -1,4 +1,3 @@
-import axios from 'axios';
 import React, { useState } from 'react';
 import useAxiosPublic from '../../hooks/useAxiosPublic';
 
@@ -6,6 +5,9 @@ const image_hosting_key = import.meta.env.VITE_IMAGE_HOSTING_KEY
 const image_hosting_api = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`
 
 const Form = () => {
+    const [image, setImage] = useState("")
+    const [loading, setLoading] = useState(false)
+
     const [formValues, setFormValues] = useState({
         first_name: '',
         last_name: '',
@@ -13,13 +15,12 @@ const Form = () => {
         address: '',
         phone_no: '',
         email: '',
-        photo: '',
+        photo: "",
         bio_details: '',
         thana: ''
     });
 
     const [errors, setErrors] = useState({});
-    const [photoPreview, setPhotoPreview] = useState(null);
 
     const axiosPublic = useAxiosPublic()
 
@@ -87,6 +88,7 @@ const Form = () => {
     };
 
     const handlePhotoChange = async (e) => {
+        setLoading(true)
         const formData = new FormData()
         formData.append("image", e.target.files[0])
 
@@ -96,7 +98,6 @@ const Form = () => {
                 ...formValues,
                 photo: file
             });
-            setPhotoPreview(URL.createObjectURL(file));
         }
         if (formData.values) {
             try {
@@ -107,7 +108,11 @@ const Form = () => {
                 });
 
                 if (res.data) {
-                    formValues.photo = res.data.data.url;
+                    setFormValues({
+                        ...formValues,
+                        photo: res.data.data.url
+                    })
+                    setLoading(false)
                 }
             }
             catch (error) {
@@ -123,14 +128,15 @@ const Form = () => {
         const validationErrors = validate();
         if (Object.keys(validationErrors).length === 0) {
             console.log('Form submitted:', formValues);
-            // const response = axios.post('/students', formValues);
-
-            // if (response.status === 201) {
-            //     console.log('Student added:', response.data);
-            //     // Clear form or provide feedback to the user as necessary
-            // } else {
-            //     setErrors({ submit: 'Failed to submit form data' });
-            // }
+            axiosPublic.post('/students', formValues)
+                .then(res => {
+                    if (res.status === 201) {
+                        console.log('Student added:', res.data);
+                    }
+                    else {
+                        setErrors({ submit: 'Failed to submit form data' });
+                    }
+                })
         }
     }
 
@@ -238,7 +244,7 @@ const Form = () => {
                         </div>
 
                         <div className='flex flex-col gap-2'>
-                            <label htmlFor="bio_details" className='font-bold text-lg w-full'>Biography Details {errors.bio_details && <span className='text-red-400 text-base font-medium'>({errors.bio_details})</span>}</label>
+                            <label htmlFor="bio_details" className='font-bold text-lg w-full'>Biodata Details {errors.bio_details && <span className='text-red-400 text-base font-medium'>({errors.bio_details})</span>}</label>
                             <textarea
                                 id="bio_details"
                                 name="bio_details"
@@ -269,9 +275,14 @@ const Form = () => {
                     </div>
 
 
-                    <div className='flex flex-col gap-4 w-full md:w-2/5'>
+                    <div className='flex flex-col gap-4 w-full md:w-2/5 '>
                         <label htmlFor="photo" className='font-bold text-lg w-full'>Photo {errors.photo && <span className='text-red-400 text-base font-medium'>({errors.photo})</span>}</label>
-                        {photoPreview && <img src={photoPreview} alt="Photo Preview" />}
+                        {
+                            loading ?
+                                <h2 className='text-center text-4xl'><span class="loading loading-spinner text-info"></span></h2>
+                                :
+                                formValues.photo && <img src={formValues.photo} alt="Photo Preview" />
+                        }
                         <input
                             id="photo"
                             name="photo"

@@ -9,7 +9,7 @@ const Navbar = () => {
     const links = <>
         <ul className={`xl:flex flex-row gap-2 duration-300 top-12 md:top-[3rem] lg:top-16 absolute xl:static ${open ? 'left-0' : '-left-60'} p-10 xl:p-0 shadow-lg xl:shadow-none no-underline xl:gap-6 text-base xl:text-xl z-50 font-bold`}>
             <li className="pb-1 xl:pb-0"><NavLink className={'focus:border-b-2 '} to='/'>Home</NavLink></li>
-            <li className="pb-1 xl:pb-0"><NavLink className={'focus:border-b-2 '} to='/'>Student List</NavLink></li>
+            <li className="pb-1 xl:pb-0"><NavLink className={'focus:border-b-2 '} to='/form'>Add Student</NavLink></li>
         </ul>
     </>
 

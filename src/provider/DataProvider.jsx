@@ -1,9 +1,16 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
+import useAxiosPublic from "../hooks/useAxiosPublic";
 
 export const DataContext = createContext(null);
 
 const DataProvider = ({ children }) => {
     const [student, setStudent] = useState([]);
+    const axiosPublic = useAxiosPublic()
+
+    useEffect(() => {
+        axiosPublic.get()
+    }, [])
+
 
     const studentInfo = { student, setStudent };
     return (
