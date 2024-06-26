@@ -1,4 +1,9 @@
+import axios from 'axios';
 import React, { useState } from 'react';
+import useAxiosPublic from '../../hooks/useAxiosPublic';
+
+const image_hosting_key = import.meta.env.VITE_IMAGE_HOSTING_KEY
+const image_hosting_api = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`
 
 const Form = () => {
     const [formValues, setFormValues] = useState({
@@ -9,12 +14,14 @@ const Form = () => {
         phone_no: '',
         email: '',
         photo: '',
-        vio_details: '',
+        bio_details: '',
         thana: ''
     });
 
     const [errors, setErrors] = useState({});
     const [photoPreview, setPhotoPreview] = useState(null);
+
+    const axiosPublic = useAxiosPublic()
 
     const validate = () => {
         const newErrors = {};
@@ -60,8 +67,8 @@ const Form = () => {
             newErrors.photo = 'Must be 50 characters or less';
         }
 
-        if (formValues.vio_details.length > 250) {
-            newErrors.vio_details = 'Must be 250 characters or less';
+        if (formValues.bio_details.length > 250) {
+            newErrors.bio_details = 'Must be 250 characters or less';
         }
 
         if (formValues.thana.length > 50) {
@@ -79,7 +86,10 @@ const Form = () => {
         });
     };
 
-    const handlePhotoChange = (e) => {
+    const handlePhotoChange = async (e) => {
+        const formData = new FormData()
+        formData.append("image", e.target.files[0])
+
         const file = e.target.files[0];
         if (file) {
             setFormValues({
@@ -88,19 +98,41 @@ const Form = () => {
             });
             setPhotoPreview(URL.createObjectURL(file));
         }
+        if (formData.values) {
+            try {
+                const res = await axiosPublic.post(image_hosting_api, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+
+                if (res.data) {
+                    formValues.photo = res.data.data.url;
+                }
+            }
+            catch (error) {
+                console.error('Error submitting form:', error);
+                setErrors({ submit: 'An error occurred' });
+            }
+        }
     };
+
 
     const handleSubmit = (e) => {
         e.preventDefault();
         const validationErrors = validate();
         if (Object.keys(validationErrors).length === 0) {
             console.log('Form submitted:', formValues);
-            // Handle form submission logic here, e.g., send data to a server
-        } else {
-            setErrors(validationErrors);
-        }
-    };
+            // const response = axios.post('/students', formValues);
 
+            // if (response.status === 201) {
+            //     console.log('Student added:', response.data);
+            //     // Clear form or provide feedback to the user as necessary
+            // } else {
+            //     setErrors({ submit: 'Failed to submit form data' });
+            // }
+        }
+    }
 
     return (
         <div className='mt-4 w-11/12 m-auto bg-slate-100 p-4 px-8 shadow-sm rounded-sm'>
@@ -206,19 +238,18 @@ const Form = () => {
                         </div>
 
                         <div className='flex flex-col gap-2'>
-                            <label htmlFor="vio_details" className='font-bold text-lg w-full'>Violations Details</label>
+                            <label htmlFor="bio_details" className='font-bold text-lg w-full'>Biography Details {errors.bio_details && <span className='text-red-400 text-base font-medium'>({errors.bio_details})</span>}</label>
                             <textarea
-                                id="vio_details"
-                                name="vio_details"
-                                value={formValues.vio_details}
+                                id="bio_details"
+                                name="bio_details"
+                                value={formValues.bio_details}
                                 onChange={handleChange}
                                 className='min-h-32 max-h-32 p-2'
                             />
-                            {errors.vio_details && <div>{errors.vio_details}</div>}
                         </div>
 
                         <div className='flex flex-col gap-2'>
-                            <label htmlFor="thana" className='font-bold text-lg w-full'>Thana</label>
+                            <label htmlFor="thana" className='font-bold text-lg w-full'>Thana {errors.thana && <span className='text-red-400 text-base font-medium'>({errors.thana})</span>}</label>
                             <select
                                 id="thana"
                                 name="thana"
@@ -226,21 +257,20 @@ const Form = () => {
                                 onChange={handleChange}
                             >
                                 <option value="">Select</option>
-                                <option value="Thana1">Khilgaon</option>
-                                <option value="Thana2">Rampura</option>
-                                <option value="Thana3">Badda</option>
-                                <option value="Thana3">Gulshan</option>
-                                <option value="Thana3">Mirpur</option>
-                                <option value="Thana3">Tajgaon</option>
-                                <option value="Thana3">Ramna</option>
+                                <option value="Khilgaon">Khilgaon</option>
+                                <option value="Rampura">Rampura</option>
+                                <option value="Badda">Badda</option>
+                                <option value="Gulshan">Gulshan</option>
+                                <option value="Mirpur">Mirpur</option>
+                                <option value="Tajgaon">Tajgaon</option>
+                                <option value="Ramna">Ramna</option>
                             </select>
-                            {errors.thana && <div>{errors.thana}</div>}
                         </div>
                     </div>
 
 
                     <div className='flex flex-col gap-4 w-full md:w-2/5'>
-                        <label htmlFor="photo" className='font-bold text-lg w-full'>Photo</label>
+                        <label htmlFor="photo" className='font-bold text-lg w-full'>Photo {errors.photo && <span className='text-red-400 text-base font-medium'>({errors.photo})</span>}</label>
                         {photoPreview && <img src={photoPreview} alt="Photo Preview" />}
                         <input
                             id="photo"
@@ -248,7 +278,6 @@ const Form = () => {
                             type="file"
                             onChange={handlePhotoChange}
                         />
-                        {errors.photo && <div>{errors.photo}</div>}
                     </div>
                 </div>
 
