@@ -1,6 +1,8 @@
 import React, { useContext, useState } from 'react';
 import useAxiosPublic from '../../hooks/useAxiosPublic';
 import { DataContext } from '../../provider/DataProvider';
+import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
 
 const image_hosting_key = import.meta.env.VITE_IMAGE_HOSTING_KEY
 const image_hosting_api = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`
@@ -9,7 +11,7 @@ const Form = () => {
     const { students, setStudents } = useContext(DataContext)
     const [image, setImage] = useState("")
     const [loading, setLoading] = useState(false)
-
+    const navigate = useNavigate()
     const initialFormValues = {
         first_name: '',
         last_name: '',
@@ -68,8 +70,8 @@ const Form = () => {
             newErrors.email = 'Invalid email address';
         }
 
-        if (formValues.photo && formValues.photo.length > 50) {
-            newErrors.photo = 'Must be 50 characters or less';
+        if (formValues.photo && formValues.photo.length > 255) {
+            newErrors.photo = 'Must be 255 characters or less';
         }
 
         if (formValues.bio_details.length > 250) {
@@ -129,6 +131,8 @@ const Form = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const validationErrors = validate();
+        console.log(Object.keys(validationErrors).length)
+        console.log(Object.keys(validationErrors))
         if (Object.keys(validationErrors).length === 0) {
             console.log('Form submitted:', formValues);
             axiosPublic.post('/students', formValues)
@@ -138,14 +142,21 @@ const Form = () => {
                         axiosPublic.get('/students')
                             .then(res => {
                                 setStudents(res.data)
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Success",
+                                    text: "Student data updated successfully!"
+                                });
+                                navigate('/')
                             })
-                        // Reset the form values after successful submission
-                        setFormValues(initialFormValues);
                     }
                     else {
                         setErrors({ submit: 'Failed to submit form data' });
                     }
                 })
+        }
+        else {
+            console.log("not enough info")
         }
     }
 
@@ -176,6 +187,7 @@ const Form = () => {
                                 type="text"
                                 value={formValues.last_name}
                                 onChange={handleChange}
+                                className='p-2 border border-gray-400 w-full'
                             />
 
                         </div>
@@ -225,6 +237,7 @@ const Form = () => {
                                 type="text"
                                 value={formValues.address}
                                 onChange={handleChange}
+                                className='p-2 border border-gray-400 w-full'
                             />
 
                         </div>
@@ -237,6 +250,7 @@ const Form = () => {
                                 type="text"
                                 value={formValues.phone_no}
                                 onChange={handleChange}
+                                className='p-2 border border-gray-400 w-full'
                             />
 
                         </div>
@@ -249,6 +263,7 @@ const Form = () => {
                                 type="email"
                                 value={formValues.email}
                                 onChange={handleChange}
+                                className='p-2 border border-gray-400 w-full'
                             />
                         </div>
 
@@ -270,6 +285,7 @@ const Form = () => {
                                 name="thana"
                                 value={formValues.thana}
                                 onChange={handleChange}
+                                className='p-2 border border-gray-400 w-full'
                             >
                                 <option value="">Select</option>
                                 <option value="Khilgaon">Khilgaon</option>

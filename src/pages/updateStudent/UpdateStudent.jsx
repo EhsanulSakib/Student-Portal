@@ -1,7 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import useAxiosPublic from '../../hooks/useAxiosPublic';
 import { DataContext } from '../../provider/DataProvider';
+import Swal from 'sweetalert2';
 
 const image_hosting_key = import.meta.env.VITE_IMAGE_HOSTING_KEY
 const image_hosting_api = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`
@@ -12,6 +13,7 @@ const UpdateStudent = () => {
     const [currentStudent, setCurrentStudent] = useState({})
     const [image, setImage] = useState("")
     const [loading, setLoading] = useState(false)
+    const navigate = useNavigate()
 
 
     const axiosPublic = useAxiosPublic()
@@ -166,6 +168,12 @@ const UpdateStudent = () => {
                         axiosPublic.get(`/students`)
                             .then(res => {
                                 setStudents(res.data)
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Success",
+                                    text: "Student data updated successfully!"
+                                });
+                                navigate('/')
                             })
                     }
                     else {
@@ -202,6 +210,7 @@ const UpdateStudent = () => {
                                 type="text"
                                 value={formValues?.last_name}
                                 onChange={handleChange}
+                                className='p-2 border border-gray-400 w-full'
                             />
 
                         </div>
@@ -251,6 +260,7 @@ const UpdateStudent = () => {
                                 type="text"
                                 value={formValues?.address}
                                 onChange={handleChange}
+                                className='p-2 border border-gray-400 w-full'
                             />
 
                         </div>
@@ -263,6 +273,7 @@ const UpdateStudent = () => {
                                 type="text"
                                 value={formValues?.phone_no}
                                 onChange={handleChange}
+                                className='p-2 border border-gray-400 w-full'
                             />
 
                         </div>
@@ -275,6 +286,7 @@ const UpdateStudent = () => {
                                 type="email"
                                 value={formValues?.email}
                                 onChange={handleChange}
+                                className='p-2 border border-gray-400 w-full'
                             />
                         </div>
 
@@ -296,6 +308,7 @@ const UpdateStudent = () => {
                                 name="thana"
                                 value={formValues?.thana}
                                 onChange={handleChange}
+                                className='p-2 border border-gray-400 w-full'
                             >
                                 <option value="">Select</option>
                                 <option value="Khilgaon">Khilgaon</option>
