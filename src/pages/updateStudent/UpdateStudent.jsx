@@ -1,82 +1,110 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import useAxiosPublic from '../../hooks/useAxiosPublic';
 import { DataContext } from '../../provider/DataProvider';
 
 const image_hosting_key = import.meta.env.VITE_IMAGE_HOSTING_KEY
 const image_hosting_api = `https://api.imgbb.com/1/upload?key=${image_hosting_key}`
 
-const Form = () => {
+const UpdateStudent = () => {
+    const { id } = useParams()
     const { students, setStudents } = useContext(DataContext)
+    const [currentStudent, setCurrentStudent] = useState({})
     const [image, setImage] = useState("")
     const [loading, setLoading] = useState(false)
 
-    const initialFormValues = {
-        first_name: '',
-        last_name: '',
-        gender: '',
-        address: '',
-        phone_no: '',
-        email: '',
-        photo: "",
-        bio_details: '',
-        thana: ''
-    };
-
-    const [formValues, setFormValues] = useState(initialFormValues);
-
-    const [errors, setErrors] = useState({});
 
     const axiosPublic = useAxiosPublic()
 
+    const initialFormValues = {
+        first_name: "",
+        last_name: "",
+        gender: "",
+        address: "",
+        phone_no: "",
+        email: "",
+        photo: "",
+        bio_details: "",
+        thana: ""
+    };
+    console.log(initialFormValues)
+
+    const [formValues, setFormValues] = useState(initialFormValues);
+
+    useEffect(() => {
+        axiosPublic.get(`/students/${id}`)
+            .then(res => {
+                console.log(res.data)
+                setCurrentStudent(res.data)
+                setFormValues({
+                    first_name: res.data.first_name,
+                    last_name: res.data.last_name,
+                    gender: res.data.gender,
+                    address: res.data.address,
+                    phone_no: res.data.phone_no,
+                    email: res.data.email,
+                    photo: res.data.photo,
+                    bio_details: res.data.vio_details,
+                    thana: res.data.thana
+                })
+            })
+    }, [])
+
+    const { first_name, last_name, gender, address, phone_no, email, photo, vio_details, thana } = currentStudent
+
+    console.log(formValues)
+
+    const [errors, setErrors] = useState({});
+
     const validate = () => {
         const newErrors = {};
-        if (!formValues.first_name) {
+        if (!formValues?.first_name) {
             newErrors.first_name = 'Required';
-        } else if (formValues.first_name.length > 50) {
+        } else if (formValues?.first_name.length > 50) {
             newErrors.first_name = 'Must be 50 characters or less';
         }
 
-        if (!formValues.last_name) {
+        if (!formValues?.last_name) {
             newErrors.last_name = 'Required';
-        } else if (formValues.last_name.length > 50) {
+        } else if (formValues?.last_name.length > 50) {
             newErrors.last_name = 'Must be 50 characters or less';
         }
 
-        if (!formValues.gender) {
+        if (!formValues?.gender) {
             newErrors.gender = 'Required';
-        } else if (!['Male', 'Female', 'Other'].includes(formValues.gender)) {
+        } else if (!['Male', 'Female', 'Other'].includes(formValues?.gender)) {
             newErrors.gender = 'Invalid gender';
         }
 
-        if (!formValues.address) {
+        if (!formValues?.address) {
             newErrors.address = 'Required';
-        } else if (formValues.address.length > 100) {
+        } else if (formValues?.address.length > 100) {
             newErrors.address = 'Must be 100 characters or less';
         }
 
-        if (!formValues.phone_no) {
+        if (!formValues?.phone_no) {
             newErrors.phone_no = 'Required';
-        } else if (!/^[0-9]+$/.test(formValues.phone_no)) {
+        } else if (!/^[0-9]+$/.test(formValues?.phone_no)) {
             newErrors.phone_no = 'Must be only digits';
-        } else if (formValues.phone_no.length > 20) {
+        } else if (formValues?.phone_no.length > 20) {
             newErrors.phone_no = 'Must be 20 characters or less';
         }
 
-        if (!formValues.email) {
+        if (!formValues?.email) {
             newErrors.email = 'Required';
-        } else if (!/\S+@\S+\.\S+/.test(formValues.email)) {
+        } else if (!/\S+@\S+\.\S+/.test(formValues?.email)) {
             newErrors.email = 'Invalid email address';
         }
 
-        if (formValues.photo && formValues.photo.length > 50) {
+        if (formValues?.photo && formValues?.photo.length > 50) {
             newErrors.photo = 'Must be 50 characters or less';
         }
 
-        if (formValues.bio_details.length > 250) {
+        if (formValues?.bio_details.length > 250) {
             newErrors.bio_details = 'Must be 250 characters or less';
         }
 
-        if (formValues.thana.length > 50) {
+        if (formValues?.thana.length > 50) {
             newErrors.thana = 'Must be 50 characters or less';
         }
 
@@ -131,16 +159,14 @@ const Form = () => {
         const validationErrors = validate();
         if (Object.keys(validationErrors).length === 0) {
             console.log('Form submitted:', formValues);
-            axiosPublic.post('/students', formValues)
+            axiosPublic.put(`/students/${id}`, formValues)
                 .then(res => {
-                    if (res.status === 201) {
-                        console.log('Student added:', res.data);
-                        axiosPublic.get('/students')
+                    if (res.status === 200) {
+                        console.log('Student Data Updated:', res.data);
+                        axiosPublic.get(`/students`)
                             .then(res => {
                                 setStudents(res.data)
                             })
-                        // Reset the form values after successful submission
-                        setFormValues(initialFormValues);
                     }
                     else {
                         setErrors({ submit: 'Failed to submit form data' });
@@ -161,8 +187,8 @@ const Form = () => {
                                 id="first_name"
                                 name="first_name"
                                 type="text"
-                                value={formValues.first_name}
                                 onChange={handleChange}
+                                value={formValues?.first_name}
                                 className='p-2 border border-gray-400 w-full'
                             />
 
@@ -174,7 +200,7 @@ const Form = () => {
                                 id="last_name"
                                 name="last_name"
                                 type="text"
-                                value={formValues.last_name}
+                                value={formValues?.last_name}
                                 onChange={handleChange}
                             />
 
@@ -188,7 +214,7 @@ const Form = () => {
                                         type="radio"
                                         name="gender"
                                         value="Male"
-                                        checked={formValues.gender === 'Male'}
+                                        checked={formValues?.gender === 'Male'}
                                         onChange={handleChange}
                                     />
                                     Male
@@ -198,7 +224,7 @@ const Form = () => {
                                         type="radio"
                                         name="gender"
                                         value="Female"
-                                        checked={formValues.gender === 'Female'}
+                                        checked={formValues?.gender === 'Female'}
                                         onChange={handleChange}
                                     />
                                     Female
@@ -208,7 +234,7 @@ const Form = () => {
                                         type="radio"
                                         name="gender"
                                         value="Other"
-                                        checked={formValues.gender === 'Other'}
+                                        checked={formValues?.gender === 'Other'}
                                         onChange={handleChange}
                                     />
                                     Other
@@ -223,7 +249,7 @@ const Form = () => {
                                 id="address"
                                 name="address"
                                 type="text"
-                                value={formValues.address}
+                                value={formValues?.address}
                                 onChange={handleChange}
                             />
 
@@ -235,7 +261,7 @@ const Form = () => {
                                 id="phone_no"
                                 name="phone_no"
                                 type="text"
-                                value={formValues.phone_no}
+                                value={formValues?.phone_no}
                                 onChange={handleChange}
                             />
 
@@ -247,7 +273,7 @@ const Form = () => {
                                 id="email"
                                 name="email"
                                 type="email"
-                                value={formValues.email}
+                                value={formValues?.email}
                                 onChange={handleChange}
                             />
                         </div>
@@ -257,7 +283,7 @@ const Form = () => {
                             <textarea
                                 id="bio_details"
                                 name="bio_details"
-                                value={formValues.bio_details}
+                                value={formValues?.bio_details}
                                 onChange={handleChange}
                                 className='min-h-32 max-h-32 p-2'
                             />
@@ -268,7 +294,7 @@ const Form = () => {
                             <select
                                 id="thana"
                                 name="thana"
-                                value={formValues.thana}
+                                value={formValues?.thana}
                                 onChange={handleChange}
                             >
                                 <option value="">Select</option>
@@ -290,7 +316,7 @@ const Form = () => {
                             loading ?
                                 <h2 className='text-center text-4xl'><span className='loading loading-spinner text-info'></span></h2>
                                 :
-                                formValues.photo && <img src={formValues.photo} alt="Photo Preview" />
+                                formValues?.photo && <img src={formValues?.photo} alt="Photo Preview" />
                         }
                         <input
                             id="photo"
@@ -301,10 +327,10 @@ const Form = () => {
                     </div>
                 </div>
 
-                <button type="submit" className='btn bg-blue-400 hover:bg-blue-600 text-white font-bold w-full mt-6 text-xl'>Submit</button>
+                <button type="submit" className='btn bg-blue-400 hover:bg-blue-600 text-white font-bold w-full mt-6 text-xl'>Update</button>
             </form>
         </div>
     );
 };
 
-export default Form;
+export default UpdateStudent;

@@ -4,15 +4,18 @@ import useAxiosPublic from "../hooks/useAxiosPublic";
 export const DataContext = createContext(null);
 
 const DataProvider = ({ children }) => {
-    const [student, setStudent] = useState([]);
+    const [students, setStudents] = useState([]);
     const axiosPublic = useAxiosPublic()
 
     useEffect(() => {
-        axiosPublic.get()
+        axiosPublic.get('/students')
+            .then(res => {
+                setStudents(res.data)
+            })
     }, [])
 
 
-    const studentInfo = { student, setStudent };
+    const studentInfo = { students, setStudents };
     return (
         <DataContext.Provider value={studentInfo}>
             {children}

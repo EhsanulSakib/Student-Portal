@@ -4,6 +4,7 @@ import Root from '../root/Root';
 import ErrorPage from '../pages/errorpage/ErrorPage';
 import Form from '../pages/form/Form';
 import StudentList from '../pages/studentList/StudentList';
+import UpdateStudent from '../pages/updateStudent/UpdateStudent';
 
 const router = createBrowserRouter([
     {
@@ -18,6 +19,10 @@ const router = createBrowserRouter([
             {
                 path: '/form',
                 element: <Form></Form>
+            },
+            {
+                path: '/update/:id',
+                element: <UpdateStudent></UpdateStudent>
             }
         ]
     }
